@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JUANITO.PUNTAS</title>
+  <style>
+    :root{
+      --ink:#0b0b0b;
+      --paper:#f5f1e8;
+      --white:#fffdf7;
+      --lime:#ffe43b;
+      --pink:#ff6f9c;
+      --purple:#2f66ff;
+      --yellow:#ffe76d;
+      --muted:#6d6a66;
+      --line:2px solid var(--ink);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--paper);color:var(--ink);font-family:Helvetica,Arial,sans-serif}
+    button,input,textarea{font:inherit;color:inherit}
+    button{cursor:pointer}
+    .shell{min-height:100vh;border:2px solid var(--ink);background:var(--white)}
+    .topbar{display:grid;grid-template-columns:360px 170px 170px 1fr;border-bottom:var(--line);min-height:72px}
+    .brand,.tab,.tagline{display:flex;align-items:center;border-right:var(--line);padding:0 24px}
+    .brand{font-weight:800;font-size:32px;background:var(--lime);color:var(--purple);letter-spacing:-1.5px;align-items:center;white-space:nowrap;line-height:1}
+    .tab{justify-content:center;font-weight:700;background:var(--white);border:none;border-right:var(--line);font-size:16px}
+    .tab.active{background:var(--purple);color:var(--lime);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px}
+    .tagline{border-right:none;justify-content:flex-end;gap:12px;font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+    .spark{font-size:28px}
+
+    main{min-height:calc(100vh - 72px)}
+    .view{display:none}
+    .view.active{display:block}
+
+    .capture-grid{display:grid;grid-template-columns:1.15fr .85fr;min-height:calc(100vh - 72px)}
+    .capture-main{position:relative;padding:42px 46px 52px;border-right:var(--line);background-color:var(--white);background-image:linear-gradient(#00000012 1px,transparent 1px),linear-gradient(90deg,#00000012 1px,transparent 1px);background-size:22px 22px}
+    .eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:2.5px;margin-bottom:12px}
+    h1{font-size:clamp(64px,8vw,118px);line-height:.83;letter-spacing:-6px;margin:0 0 18px;font-weight:800;max-width:780px}
+    .sub{font-size:14px;letter-spacing:3px;text-transform:uppercase;margin-bottom:46px}
+    .field{margin-top:22px;position:relative}
+    label{display:block;font-size:16px;font-weight:800;margin-bottom:8px;text-transform:uppercase}
+    .brand-input,.idea-input{width:100%;border:var(--line);background:#fff;padding:18px 20px;outline:none;box-shadow:5px 5px 0 var(--ink)}
+    .brand-input{font-weight:800;font-size:28px;text-transform:uppercase}
+    .idea-input{min-height:190px;resize:vertical;font-size:28px;line-height:1.25}
+    .assist{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+    .saved{display:none;background:var(--lime);border:var(--line);padding:10px 14px;color:var(--ink);font-weight:800;box-shadow:3px 3px 0 var(--ink)}
+    .saved.show{display:inline-flex}
+
+    .suggestions{position:absolute;left:0;right:0;top:100%;z-index:5;background:#fff;border:var(--line);border-top:none;box-shadow:5px 5px 0 var(--ink);max-height:240px;overflow:auto;display:none}
+    .suggestions.show{display:block}
+    .suggestion{display:flex;justify-content:space-between;gap:20px;padding:14px 16px;border-top:1px solid #ddd;cursor:pointer}
+    .suggestion:hover,.suggestion.active{background:#d7c9ff}
+    .suggestion small{color:#555}
+
+    .capture-side{background:var(--pink);padding:34px;display:flex;flex-direction:column;gap:26px}
+    .note-stack{position:relative;min-height:330px;display:flex;align-items:center;justify-content:center}
+    .note{position:absolute;width:min(74%,330px);aspect-ratio:1/1;border:var(--line);box-shadow:8px 8px 0 var(--ink)}
+    .note.purple{background:var(--purple);transform:rotate(-5deg) translate(18px,18px)}
+    .note.yellow{background:var(--yellow);transform:rotate(9deg) translate(10px,-12px)}
+    .note.front{background:var(--paper);transform:rotate(-7deg);display:flex;align-items:center;justify-content:center;text-align:center;font-size:36px;font-weight:800;line-height:1.05;padding:30px}
+    .panel{background:var(--paper);border:var(--line);padding:20px;box-shadow:5px 5px 0 var(--ink)}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .panel-head h3{font-size:26px;margin:0}
+    .mini{font-size:11px;font-weight:700;text-transform:uppercase}
+    .brand-chip-wrap{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{border:var(--line);background:#fff;padding:9px 12px;font-size:14px;font-weight:700}
+    .chip.featured{background:#c9b7ff}
+    .divider{height:1px;background:#222;margin:18px 0}
+
+    .archive{background:var(--white)}
+    .archive-hero{display:grid;grid-template-columns:1fr;border-bottom:var(--line);min-height:190px}
+    .archive-title{background:var(--purple);padding:34px;color:var(--lime)}
+    .archive-title h2{font-size:64px;letter-spacing:-3px;margin:0 0 10px}
+    .archive-title p{margin:0;text-transform:uppercase;letter-spacing:3px;font-size:13px;line-height:1.6}
+    .archive-center{padding:28px;border-right:var(--line);background-color:#ddd;background-image:repeating-linear-gradient(45deg,#bbb 0 2px,#ddd 2px 6px);display:flex;align-items:end;justify-content:center}
+    .filebox{display:flex;gap:10px;align-items:end}
+    .folder{width:90px;height:110px;border:var(--line);background:#f8f5ee;display:flex;align-items:center;justify-content:center;font-weight:800;transform:rotate(-3deg);box-shadow:4px 4px 0 var(--ink)}
+    .folder:nth-child(2){height:125px;transform:rotate(2deg)}
+    .folder:nth-child(3){height:102px;transform:rotate(-1deg)}
+    .archive-quote{background:var(--lime);padding:26px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:32px;font-weight:800;line-height:1.05}
+
+    .archive-body{display:grid;grid-template-columns:260px 1fr;min-height:600px}
+    .filters{border-right:var(--line);padding:28px 22px;background:var(--paper)}
+    .filters h3{font-size:28px;margin:0 0 18px}
+    .filter-btn{width:100%;display:flex;justify-content:space-between;padding:14px;border:var(--line);background:#fff;margin-bottom:12px;font-weight:700;box-shadow:3px 3px 0 var(--ink)}
+    .filter-btn.active{background:#bca8ff}
+    .list-wrap{padding:28px}
+    .list-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:20px}
+    .list-head h3{font-size:34px;margin:0}
+    .search{border:var(--line);padding:12px 14px;width:min(340px,50%);background:#fff;box-shadow:3px 3px 0 var(--ink)}
+    .cards{display:flex;flex-direction:column;gap:14px}
+    .card{display:grid;grid-template-columns:170px 1fr;border:var(--line);background:#fff;box-shadow:4px 4px 0 var(--ink)}
+    .card-brand{padding:22px;font-weight:800;font-size:20px;border-right:var(--line);display:flex;align-items:center}
+    .card:nth-child(4n+1) .card-brand{background:#ffb1c9}
+    .card:nth-child(4n+2) .card-brand{background:#c6b8ff}
+    .card:nth-child(4n+3) .card-brand{background:#ffe98a}
+    .card:nth-child(4n+4) .card-brand{background:#ddd}
+    .card-content{padding:16px 18px}
+    .meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;font-size:12px;color:#666}
+    .status{border:1.5px solid var(--ink);padding:5px 9px;border-radius:999px;color:var(--ink);font-weight:700;cursor:pointer}
+    .status.todo{background:#ffd0dc}
+    .status.done{background:#d5ff79}
+    .status.worked{background:#ffe76d}
+    .status.discarded{background:#0b0b0b;color:#fff}
+    .idea{font-size:18px;line-height:1.35}
+    .empty{border:var(--line);padding:30px;background:#fff}
+
+
+    .authbar{display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:var(--line);background:var(--yellow);font-size:13px;font-weight:700}
+    .authbar.show{display:flex}
+    .authbar button{border:var(--line);background:#fff;padding:8px 12px;font-weight:700;box-shadow:2px 2px 0 var(--ink)}
+    .login-overlay{position:fixed;inset:0;z-index:100;background:rgba(11,11,11,.92);display:none;align-items:center;justify-content:center;padding:20px}
+    .login-overlay.show{display:flex}
+    .login-card{width:min(520px,100%);background:var(--yellow);border:3px solid var(--ink);box-shadow:8px 8px 0 var(--purple);padding:28px}
+    .login-card h2{margin:0 0 8px;font-size:42px;letter-spacing:-2px;color:var(--purple)}
+    .login-card p{margin:0 0 20px;line-height:1.4}
+    .login-card input{width:100%;border:var(--line);padding:14px;background:#fff;margin-bottom:12px}
+    .login-card button{width:100%;border:var(--line);background:var(--purple);color:var(--yellow);padding:14px;font-weight:800;box-shadow:4px 4px 0 var(--ink)}
+    .login-msg{margin-top:12px;font-size:13px}
+
+    @media(max-width:900px){
+      .topbar{grid-template-columns:minmax(240px,1fr) 110px 110px}.tagline{display:none}.brand{font-size:24px;padding:0 16px}
+      .capture-grid{grid-template-columns:1fr}.capture-main{border-right:none;border-bottom:var(--line)}
+      .archive-hero{grid-template-columns:1fr}.archive-title{border-right:none;border-bottom:var(--line)}
+      .archive-body{grid-template-columns:1fr}.filters{border-right:none;border-bottom:var(--line)}
+      .card{grid-template-columns:1fr}.card-brand{border-right:none;border-bottom:var(--line)}
+      h1{letter-spacing:-3px}
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="shell">
+  <div id="authbar" class="authbar"><span id="authEmail"></span><button id="logoutBtn">Cerrar sesión</button></div>
+  <header class="topbar">
+    <div class="brand">JUANITO.PUNTAS</div>
+    <button class="tab active" data-view="capture">CAPTURA</button>
+    <button class="tab" data-view="archive">ARCHIVO</button>
+    <div class="tagline"><span class="spark">✷</span> ideas rápidas para grandes ideas.</div>
+  </header>
+
+  <main>
+    <section id="capture" class="view active">
+      <div class="capture-grid">
+        <div class="capture-main">
+          <div class="eyebrow">Tu archivo creativo</div>
+          <h1>GUARDÁ<br>LA PUNTA</h1>
+          <div class="sub">Acá es donde pongo ideas cuando se me canta el orto.</div>
+
+          <div class="field" id="brandField">
+            <label for="brandInput">Marca</label>
+            <input id="brandInput" class="brand-input" placeholder="DORITOS" autocomplete="off" />
+            <div id="suggestions" class="suggestions"></div>
+          </div>
+
+          <div class="field">
+            <label for="ideaInput">Punta</label>
+            <textarea id="ideaInput" class="idea-input" placeholder="Tirá la puntita y apretá Enter..."></textarea>
+            <div class="assist">
+              <span>ENTER = GUARDAR · SHIFT+ENTER = SALTO</span>
+              <span id="saved" class="saved">GUARDADA ✓</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="capture-side">
+          <div class="note-stack">
+            <div class="note purple"></div>
+            <div class="note yellow"></div>
+            <div class="note front">IDEAS<br>EN EL<br>MOMENTO<br>JUSTO.</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>MARCAS</h3><span class="mini">AUTOCOMPLETADO</span></div>
+            <strong>Predefinidas</strong>
+            <div id="predefinedChips" class="brand-chip-wrap" style="margin-top:10px"></div>
+            <div class="divider"></div>
+            <strong>Otras usadas</strong>
+            <div id="customChips" class="brand-chip-wrap" style="margin-top:10px"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="archive" class="view archive">
+      <div class="archive-hero">
+        <div class="archive-title"><h2>ARCHIVO</h2><p>Todas tus puntas,<br>en un solo lugar.</p></div>
+      </div>
+      <div class="archive-body">
+        <aside class="filters">
+          <h3>FILTROS</h3>
+          <button class="filter-btn active" data-filter="all"><span>Todas</span><span id="countAll">0</span></button>
+          <button class="filter-btn" data-filter="todo"><span>No hechas</span><span id="countTodo">0</span></button>
+          <button class="filter-btn" data-filter="done"><span>Hechas</span><span id="countDone">0</span></button>
+          <button class="filter-btn" data-filter="worked"><span>Trabajadas</span><span id="countWorked">0</span></button>
+          <button class="filter-btn" data-filter="discarded"><span>Descartadas</span><span id="countDiscarded">0</span></button>
+          <button class="filter-btn" data-filter="predefined"><span>Predefinidas</span><span id="countPre">0</span></button>
+          <button class="filter-btn" data-filter="custom"><span>Otras</span><span id="countCustom">0</span></button>
+        </aside>
+        <div class="list-wrap">
+          <div class="list-head">
+            <span></span>
+            <input id="search" class="search" placeholder="Buscar en tus puntas..." />
+          </div>
+          <div id="cards" class="cards"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-card">
+    <h2>JUANITO.PUNTAS</h2>
+    <p>Meté la contraseña para entrar desde cualquier dispositivo.</p>
+    <input id="loginPassword" type="password" placeholder="CONTRASEÑA" autocomplete="current-password">
+    <button id="loginBtn">ENTRAR</button>
+    <div id="loginMsg" class="login-msg"></div>
+  </div>
+</div>
+
+<script>
+  const PREDEFINED = ['Noblex','Pedido Ya','Mercado Libre','Mercado Pago','Film Suez','Forbes','Corona','Corona 0.0','Stella Artois','Stella Artois Pure Gold'];
+  const STORAGE_KEY = 'puntas_app_v1';
+  const SUPABASE_URL = 'https://icevcsnatpqlmxbkhixl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_gxpxKlaxLiW48IaHT2HiyA_6TdOzSeN';
+    const ALLOWED_EMAIL = 'jiorlievsky@gmail.com';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentFilter = 'all';
+  let highlighted = -1;
+  let data = [];
+  let currentUser = null;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const brandInput = $('#brandInput');
+  const ideaInput = $('#ideaInput');
+  const suggestions = $('#suggestions');
+  const saved = $('#saved');
+  const cards = $('#cards');
+  const search = $('#search');
+  const loginOverlay = $('#loginOverlay');
+  const loginPassword = $('#loginPassword');
+  const loginBtn = $('#loginBtn');
+  const loginMsg = $('#loginMsg');
+  const authbar = $('#authbar');
+  const authEmail = $('#authEmail');
+
+  function norm(s){ return (s||'').trim().toLowerCase(); }
+  function isPredefined(name){ return PREDEFINED.some(x=>norm(x)===norm(name)); }
+  function customBrands(){
+    return [...new Set(data.filter(x=>x.type==='custom').map(x=>x.brand))].sort((a,b)=>a.localeCompare(b));
+  }
+  function escapeHtml(s){return (s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]))}
+
+  function showLogin(){
+    loginOverlay.classList.add('show');
+    authbar.classList.remove('show');
+  }
+  function showApp(){
+    loginOverlay.classList.remove('show');
+    authbar.classList.add('show');
+    authEmail.textContent = currentUser?.email || '';
+  }
+
+  async function signInWithPassword(){
+    const password = loginPassword.value;
+    if(!password){ loginMsg.textContent='Escribí la contraseña.'; return; }
+    loginBtn.disabled = true;
+    loginMsg.textContent = 'Entrando…';
+    const { error } = await db.auth.signInWithPassword({
+      email: ALLOWED_EMAIL,
+      password
+    });
+    loginBtn.disabled = false;
+    if(error){
+      loginMsg.textContent = 'Contraseña incorrecta.';
+      return;
+    }
+    loginPassword.value='';
+    loginMsg.textContent='';
+  }
+
+  async function loadCloud(){
+    const { data: rows, error } = await db
+      .from('puntas')
+      .select('id,brand,idea,status,type,created_at')
+      .order('created_at',{ascending:false});
+    if(error){
+      console.error(error);
+      cards.innerHTML = '<div class="empty">No pude cargar Supabase. Revisá que hayas creado la tabla y las políticas.</div>';
+      return;
+    }
+    data = (rows||[]).map(r=>({
+      id:r.id, brand:r.brand, idea:r.idea, status:r.status || 'todo', type:r.type || (isPredefined(r.brand)?'predefined':'custom'), createdAt:new Date(r.created_at).getTime()
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    renderAll();
+  }
+
+  async function migrateLocalIfNeeded(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw || data.length) return;
+    let local=[];
+    try{ local=JSON.parse(raw)||[]; }catch{ return; }
+    const demoIdeas = new Set([
+      'La gente ama los triángulos amorosos hasta que les pasan a ellos.',
+      'El verdadero pan de cada día es el que te banca en las ideas locas.',
+      'Una serie sobre gente que se saltea el objetivo pero igual llega lejos.'
+    ]);
+    local = local.filter(x=>x?.brand && x?.idea && !demoIdeas.has(x.idea));
+    if(!local.length) return;
+    const rows = local.map(x=>({
+      user_id: currentUser.id,
+      brand:x.brand,
+      idea:x.idea,
+      status:x.status || (x.done?'done':'todo'),
+      type:x.type || (isPredefined(x.brand)?'predefined':'custom'),
+      created_at:new Date(x.createdAt || Date.now()).toISOString()
+    }));
+    const { error } = await db.from('puntas').insert(rows);
+    if(!error) await loadCloud();
+  }
+
+  function renderChips(){
+    $('#predefinedChips').innerHTML = PREDEFINED.map(x=>`<button class="chip featured" data-brand="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join('');
+    const customs = customBrands();
+    $('#customChips').innerHTML = customs.length ? customs.map(x=>`<button class="chip" data-brand="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join('') : '<span style="font-size:14px;color:#666">Todavía ninguna.</span>';
+    $$('.chip[data-brand]').forEach(btn=>btn.onclick=()=>{brandInput.value=btn.dataset.brand;ideaInput.focus()});
+  }
+
+  function showSuggestions(){
+    const q = norm(brandInput.value);
+    const all = [...PREDEFINED.map(x=>({name:x,type:'Marca predefinida'})), ...customBrands().map(x=>({name:x,type:'Otra'}))]
+      .filter((v,i,a)=>a.findIndex(z=>norm(z.name)===norm(v.name))===i)
+      .filter(x=>!q || norm(x.name).includes(q)).slice(0,8);
+    highlighted=-1;
+    suggestions.innerHTML = all.map((x,i)=>`<div class="suggestion" data-i="${i}" data-name="${escapeHtml(x.name)}"><strong>${escapeHtml(x.name)}</strong><small>${x.type}</small></div>`).join('');
+    suggestions.classList.toggle('show',all.length>0 && document.activeElement===brandInput);
+    $$('.suggestion').forEach(el=>el.onclick=()=>{brandInput.value=el.dataset.name;suggestions.classList.remove('show');ideaInput.focus()});
+  }
+
+  async function addIdea(){
+    const brand = brandInput.value.trim();
+    const idea = ideaInput.value.trim();
+    if(!brand || !idea){ (!brand ? brandInput : ideaInput).focus(); return; }
+    const payload = {user_id:currentUser.id,brand,idea,status:'todo',type:isPredefined(brand)?'predefined':'custom'};
+    const { data: row, error } = await db.from('puntas').insert(payload).select('id,brand,idea,status,type,created_at').single();
+    if(error){ alert('No se pudo guardar: '+error.message); return; }
+    data.unshift({id:row.id,brand:row.brand,idea:row.idea,status:row.status,type:row.type,createdAt:new Date(row.created_at).getTime()});
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    ideaInput.value='';
+    saved.classList.add('show');
+    setTimeout(()=>saved.classList.remove('show'),900);
+    renderAll();
+  }
+
+  brandInput.addEventListener('input',showSuggestions);
+  brandInput.addEventListener('focus',showSuggestions);
+  brandInput.addEventListener('keydown',e=>{
+    const items=$$('.suggestion');
+    if(e.key==='ArrowDown' && items.length){e.preventDefault();highlighted=Math.min(highlighted+1,items.length-1)}
+    else if(e.key==='ArrowUp' && items.length){e.preventDefault();highlighted=Math.max(highlighted-1,0)}
+    else if(e.key==='Enter' && highlighted>=0){e.preventDefault();brandInput.value=items[highlighted].dataset.name;suggestions.classList.remove('show');ideaInput.focus();return}
+    else if(e.key==='Enter'){e.preventDefault();suggestions.classList.remove('show');ideaInput.focus();return}
+    items.forEach((x,i)=>x.classList.toggle('active',i===highlighted));
+  });
+  document.addEventListener('click',e=>{if(!$('#brandField').contains(e.target))suggestions.classList.remove('show')});
+  ideaInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addIdea()}});
+
+  function fmt(ts){
+    const d=new Date(ts), now=new Date();
+    const same=d.toDateString()===now.toDateString();
+    const time=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    return same?`Hoy · ${time}`:`${d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'})} · ${time}`;
+  }
+  function filtered(){
+    const q=norm(search.value||'');
+    return data.filter(x=>{
+      const f = currentFilter==='all' || (currentFilter==='todo'&&x.status==='todo') || (currentFilter==='done'&&x.status==='done') || (currentFilter==='worked'&&x.status==='worked') || (currentFilter==='discarded'&&x.status==='discarded') || (currentFilter==='predefined'&&x.type==='predefined') || (currentFilter==='custom'&&x.type==='custom');
+      const s = !q || norm(x.brand).includes(q) || norm(x.idea).includes(q);
+      return f&&s;
+    });
+  }
+
+  async function cycleStatus(id){
+    const it=data.find(x=>x.id===id); if(!it) return;
+    const order=['todo','done','discarded','worked'];
+    const next=order[(order.indexOf(it.status)+1)%order.length];
+    const {error}=await db.from('puntas').update({status:next}).eq('id',id);
+    if(error){alert('No se pudo actualizar: '+error.message);return;}
+    it.status=next; localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); renderAll();
+  }
+
+  function renderArchive(){
+    const list=filtered();
+    const statusLabel = {todo:'○ No hecha',done:'✓ Hecha',worked:'↗ Trabajada',discarded:'× Descartada'};
+    cards.innerHTML=list.length?list.map(x=>`<article class="card">
+      <div class="card-brand">${escapeHtml(x.brand.toUpperCase())}</div>
+      <div class="card-content">
+        <div class="meta"><button class="status ${x.status}" data-id="${x.id}">${statusLabel[x.status] || statusLabel.todo}</button><span>${fmt(x.createdAt)}</span></div>
+        <div class="idea">${escapeHtml(x.idea)}</div>
+      </div>
+    </article>`).join(''):'<div class="empty">No hay puntas para este filtro.</div>';
+    $$('.status').forEach(btn=>btn.onclick=()=>cycleStatus(btn.dataset.id));
+    $('#countAll').textContent=data.length;
+    $('#countTodo').textContent=data.filter(x=>x.status==='todo').length;
+    $('#countDone').textContent=data.filter(x=>x.status==='done').length;
+    $('#countWorked').textContent=data.filter(x=>x.status==='worked').length;
+    $('#countDiscarded').textContent=data.filter(x=>x.status==='discarded').length;
+    $('#countPre').textContent=data.filter(x=>x.type==='predefined').length;
+    $('#countCustom').textContent=data.filter(x=>x.type==='custom').length;
+  }
+
+  $$('.filter-btn').forEach(btn=>btn.onclick=()=>{currentFilter=btn.dataset.filter;$$('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderArchive()});
+  search.addEventListener('input',renderArchive);
+  $$('.tab').forEach(tab=>tab.onclick=()=>{
+    $$('.tab').forEach(t=>t.classList.toggle('active',t===tab));
+    $$('.view').forEach(v=>v.classList.toggle('active',v.id===tab.dataset.view));
+    if(tab.dataset.view==='archive') renderArchive();
+  });
+  function renderAll(){renderChips();renderArchive()}
+
+  loginBtn.addEventListener('click',signInWithPassword);
+  loginPassword.addEventListener('keydown',e=>{if(e.key==='Enter')signInWithPassword()});
+  $('#logoutBtn').addEventListener('click',async()=>{await db.auth.signOut(); data=[]; renderAll(); showLogin();});
+
+  async function boot(){
+    const {data:{session}} = await db.auth.getSession();
+    currentUser=session?.user||null;
+    if(currentUser && currentUser.email?.toLowerCase() !== ALLOWED_EMAIL){
+      await db.auth.signOut();
+      currentUser=null;
+      loginMsg.textContent='Esta cuenta no tiene acceso.';
+    }
+    if(!currentUser){showLogin(); renderAll(); return;}
+    showApp();
+    await loadCloud();
+    await migrateLocalIfNeeded();
+  }
+  db.auth.onAuthStateChange(async(_event,session)=>{
+    const wasLoggedIn=!!currentUser;
+    currentUser=session?.user||null;
+    if(currentUser && currentUser.email?.toLowerCase() !== ALLOWED_EMAIL){
+      await db.auth.signOut();
+      currentUser=null;
+      loginMsg.textContent='Esta cuenta no tiene acceso.';
+    }
+    if(currentUser && !wasLoggedIn){showApp(); await loadCloud(); await migrateLocalIfNeeded();}
+    if(!currentUser){data=[];renderAll();showLogin();}
+  });
+  boot();
+</script>
+</body>
+</html>
